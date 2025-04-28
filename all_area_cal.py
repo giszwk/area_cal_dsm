@@ -4,6 +4,7 @@ import rasterio as rio
 from rasterio.mask import mask
 import numpy as np
 import os
+import csv
 
 def calculate_building_surface_area(slope_raster_path, buildings_shp_path, output_shp_path):
     """
@@ -14,6 +15,14 @@ def calculate_building_surface_area(slope_raster_path, buildings_shp_path, outpu
         buildings_shp_path (str): 建筑足迹矢量文件路径。
         output_shp_path (str): 输出包含表面积字段的矢量文件路径。
     """
+    # 检查文件是否存在
+    if not os.path.isfile(slope_raster_path):
+        print(f"DSM file not found: {slope_raster_path}. Skipping...")
+        return
+    if not os.path.isfile(buildings_shp_path):
+        print(f"DSM file not found: {buildings_shp_path}. Skipping...")
+        return
+
     # 读取坡度栅格数据
     with rio.open(slope_raster_path) as slope_ds:
         slope_crs = slope_ds.crs
@@ -45,7 +54,7 @@ def calculate_building_surface_area(slope_raster_path, buildings_shp_path, outpu
                 valid_slope_values = slope_values[(slope_values > 0) & (slope_values < 80)]
                 
                 if len(valid_slope_values) == 0:
-                    print(f"建筑 {idx} 的坡度值无效，跳过")
+                    # print(f"建筑 {idx} 的坡度值无效，跳过")
                     surface_areas.append(None)
                     planar_areas.append(None)
                     area_ratios.append(None)
@@ -77,12 +86,16 @@ def calculate_building_surface_area(slope_raster_path, buildings_shp_path, outpu
         buildings_gdf.to_file(output_shp_path)
         print(f"包含表面积字段的 Shapefile 已保存至: {output_shp_path}")
 
-# 测试代码
-if __name__ == "__main__":
-    city_names = ['Boston','Dallas–Fort Worth','DC','Houston','New York City','Philadelphia','San Francisco']
-    for city_name in city_names:  
-        slope_raster_path = f"/data24t/weikezhao/fifth_limian/usa/area_cal/slp_tifs/{city_name}_slp.tif"  # 坡度栅格文件路径
-        buildings_shp_path = f"/data24t/weikezhao/fifth_limian/usa/stats_cal/output_shp/{city_name}_stats.shp" # 建筑足迹矢量文件路径
-        output_shp_path =  f"/data24t/weikezhao/fifth_limian/usa/area_cal/area_shp/{city_name}_area.shp" # 输出 Shapefile 路径
-        
-        calculate_building_surface_area(slope_raster_path, buildings_shp_path, output_shp_path)
+if __name__ == '__main__':
+    csv_file_path = '/data24t/weikezhao/fifth_limian/Dsm_Stats_inBuilding/city_list.csv'
+    root_folder = '/data24t/weikezhao/fifth_limian/usa_git/data'
+
+    with open(csv_file_path, mode='r', encoding='utf-8') as file:
+        reader = csv.DictReader(file)  # 假设 CSV 文件有表头：city_name, lat, lon, building_name
+        for row in reader:
+            city_name = row['city_name']
+            slope_raster_path = f"/data24t/weikezhao/fifth_limian/area_cal_dsm/slp_tifs/{city_name}_slp.tif"  # 坡度栅格文件路径
+            buildings_shp_path = f"/data24t/weikezhao/fifth_limian/Dsm_Stats_inBuilding/data/output/{city_name}_stats.shp" # 建筑足迹矢量文件路径
+            output_shp_path =  f"/data24t/weikezhao/fifth_limian/area_cal_dsm/area_shp/{city_name}_area.shp" # 输出 Shapefile 路径
+            
+            calculate_building_surface_area(slope_raster_path, buildings_shp_path, output_shp_path)

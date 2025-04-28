@@ -1,4 +1,6 @@
+import os
 import numpy as np
+import csv
 from osgeo import gdal
 from scipy.ndimage import convolve
 
@@ -10,6 +12,11 @@ def calculate_slope(dem_path, output_path):
         dem_path (str): 输入 DEM 文件路径。
         output_path (str): 输出坡度栅格文件路径。
     """
+    # 检查文件是否存在
+    if not os.path.isfile(dem_path):
+        print(f"DSM file not found: {dem_path}. Skipping...")
+        return
+
     # 打开 DEM 文件并获取地理变换信息
     dem_ds = gdal.Open(dem_path)
     transform = dem_ds.GetGeoTransform()
@@ -21,7 +28,6 @@ def calculate_slope(dem_path, output_path):
 
     # 获取 nodata 值
     nodata = band.GetNoDataValue()
-    print('nodata', nodata)
     if nodata is not None:
         dem_array[dem_array == nodata] = np.nan  # 将 nodata 替换为 NaN
 
@@ -82,9 +88,14 @@ def export_raster(array, template_ds, output_path):
     out_ds = None
 
 # 测试代码
-if __name__ == "__main__":
-    city_names = ['Boston','Dallas–Fort Worth','DC','Houston','New York City','Philadelphia','San Francisco']
-    for city_name in city_names:
-        dem_path = f"/data24t/weikezhao/fifth_limian/usa/mpc_download/{city_name}/{city_name}_dsm_cropped.tif"       # 输入 DEM 文件路径
-        output_path = f"/data24t/weikezhao/fifth_limian/usa/area_cal/slp_tifs/{city_name}_slp.tif"  # 输出坡度栅格文件路径
-        calculate_slope(dem_path, output_path)
+if __name__ == '__main__':
+    csv_file_path = '/data24t/weikezhao/fifth_limian/Dsm_Stats_inBuilding/city_list.csv'
+    root_folder = '/data24t/weikezhao/fifth_limian/usa_git/data'
+
+    with open(csv_file_path, mode='r', encoding='utf-8') as file:
+        reader = csv.DictReader(file)  # 假设 CSV 文件有表头：city_name, lat, lon, building_name
+        for row in reader:
+            city_name = row['city_name']
+            dem_path = f"/data24t/weikezhao/fifth_limian/usa_git/data/{city_name}/{city_name}_dsm_cropped.tif"       # 输入 DEM 文件路径
+            output_path = f"/data24t/weikezhao/fifth_limian/area_cal_dsm/slp_tifs/{city_name}_slp.tif"  # 输出坡度栅格文件路径
+            calculate_slope(dem_path, output_path)
