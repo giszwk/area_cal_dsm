@@ -88,14 +88,13 @@ def calculate_building_surface_area(slope_raster_path, buildings_shp_path, outpu
 
 if __name__ == '__main__':
     csv_file_path = '/data24t/weikezhao/fifth_limian/Dsm_Stats_inBuilding/city_list.csv'
-    root_folder = '/data24t/weikezhao/fifth_limian/usa_git/data'
 
     with open(csv_file_path, mode='r', encoding='utf-8') as file:
         reader = csv.DictReader(file)  # 假设 CSV 文件有表头：city_name, lat, lon, building_name
         for row in reader:
             city_name = row['city_name']
-            slope_raster_path = f"/data24t/weikezhao/fifth_limian/area_cal_dsm/slp_tifs/{city_name}_slp.tif"  # 坡度栅格文件路径
-            buildings_shp_path = f"/data24t/weikezhao/fifth_limian/Dsm_Stats_inBuilding/data/output/{city_name}_stats.shp" # 建筑足迹矢量文件路径
-            output_shp_path =  f"/data24t/weikezhao/fifth_limian/area_cal_dsm/area_shp/{city_name}_area.shp" # 输出 Shapefile 路径
+            slope_raster_path = f"/data24t/weikezhao/fifth_limian/area_cal_dsm/data/slp_tifs/{city_name}_slp.tif"  # 坡度栅格文件路径
+            buildings_shp_path = f"/data24t/weikezhao/fifth_limian/Dsm_Stats_inBuilding/data/3d_globfp/output/{city_name}_stats.shp" # 建筑足迹矢量文件路径
+            output_shp_path =  f"/data24t/weikezhao/fifth_limian/area_cal_dsm/data/area_shp/{city_name}_area.shp" # 输出 Shapefile 路径
             
             calculate_building_surface_area(slope_raster_path, buildings_shp_path, output_shp_path)

@@ -12,11 +12,6 @@ def calculate_slope(dem_path, output_path):
         dem_path (str): 输入 DEM 文件路径。
         output_path (str): 输出坡度栅格文件路径。
     """
-    # 检查文件是否存在
-    if not os.path.isfile(dem_path):
-        print(f"DSM file not found: {dem_path}. Skipping...")
-        return
-
     # 打开 DEM 文件并获取地理变换信息
     dem_ds = gdal.Open(dem_path)
     transform = dem_ds.GetGeoTransform()
@@ -90,12 +85,16 @@ def export_raster(array, template_ds, output_path):
 # 测试代码
 if __name__ == '__main__':
     csv_file_path = '/data24t/weikezhao/fifth_limian/Dsm_Stats_inBuilding/city_list.csv'
-    root_folder = '/data24t/weikezhao/fifth_limian/usa_git/data'
+    root_folder = '/data24t/weikezhao/fifth_limian/mpc_download/data'
 
     with open(csv_file_path, mode='r', encoding='utf-8') as file:
         reader = csv.DictReader(file)  # 假设 CSV 文件有表头：city_name, lat, lon, building_name
         for row in reader:
             city_name = row['city_name']
-            dem_path = f"/data24t/weikezhao/fifth_limian/usa_git/data/{city_name}/{city_name}_dsm_cropped.tif"       # 输入 DEM 文件路径
-            output_path = f"/data24t/weikezhao/fifth_limian/area_cal_dsm/slp_tifs/{city_name}_slp.tif"  # 输出坡度栅格文件路径
+            dem_path = f"/data24t/weikezhao/fifth_limian/mpc_download/data/{city_name}/{city_name}_dsm_cropped.tif"       # 输入 DEM 文件路径
+            output_path = f"/data24t/weikezhao/fifth_limian/area_cal_dsm/data/slp_tifs/{city_name}_slp.tif"  # 输出坡度栅格文件路径
+            print(f'-----{city_name}-----')
+            if not os.path.isfile(dem_path):
+                print(f"DSM file not found: {dem_path}. Skipping...")
+                continue
             calculate_slope(dem_path, output_path)
